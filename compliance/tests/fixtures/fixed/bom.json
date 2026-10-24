@@ -1,0 +1,30 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "components": [
+    {
+      "type": "library",
+      "name": "spring-webmvc"
+    },
+    {
+      "type": "library",
+      "name": "spring-jdbc"
+    },
+    {
+      "type": "library",
+      "name": "h2"
+    },
+    {
+      "type": "library",
+      "name": "commons-text"
+    },
+    {
+      "type": "library",
+      "name": "jackson-databind"
+    },
+    {
+      "type": "library",
+      "name": "tomcat-embed-core"
+    }
+  ]
+}

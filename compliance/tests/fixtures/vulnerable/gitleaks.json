@@ -1,0 +1,25 @@
+[
+ {
+  "Description": "PayGate live API key",
+  "StartLine": 14,
+  "EndLine": 14,
+  "StartColumn": 45,
+  "EndColumn": 85,
+  "Match": "pgk_live_7Hq2mX9vLz4Rt1Yb6Nc3Hd5Wj0Ae8UsK",
+  "Secret": "pgk_live_7Hq2mX9vLz4Rt1Yb6Nc3Hd5Wj0Ae8UsK",
+  "File": "app/src/main/java/com/demo/payments/config/PaymentGatewayConfig.java",
+  "SymlinkFile": "",
+  "Commit": "",
+  "Entropy": 5.1624303,
+  "Author": "",
+  "Email": "",
+  "Date": "",
+  "Message": "",
+  "Tags": [
+   "payment",
+   "api-key"
+  ],
+  "RuleID": "paygate-live-api-key",
+  "Fingerprint": "app/src/main/java/com/demo/payments/config/PaymentGatewayConfig.java:paygate-live-api-key:14"
+ }
+]

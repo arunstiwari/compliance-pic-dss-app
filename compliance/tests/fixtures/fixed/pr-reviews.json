@@ -1,0 +1,14 @@
+[
+  {
+    "user": {
+      "login": "security-lead"
+    },
+    "state": "CHANGES_REQUESTED"
+  },
+  {
+    "user": {
+      "login": "security-lead"
+    },
+    "state": "APPROVED"
+  }
+]

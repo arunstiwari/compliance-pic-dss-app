@@ -1,0 +1,17 @@
+{
+  "@programName": "ZAP",
+  "site": [
+    {
+      "@name": "http://localhost:8080",
+      "alerts": [
+        {
+          "pluginid": "10049",
+          "alert": "Non-Storable Content",
+          "riskcode": "0",
+          "confidence": "2",
+          "count": "3"
+        }
+      ]
+    }
+  ]
+}

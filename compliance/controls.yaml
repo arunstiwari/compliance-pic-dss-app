@@ -1,0 +1,247 @@
+# Controls-as-code: maps selected PCI DSS and ISO/IEC 27001 controls to automated
+# pipeline checks. compliance/aggregate.py reads this file plus the scanner reports
+# and produces the compliance matrix.
+#
+# Wording: an automated check provides EVIDENCE FOR a control. It does not make the
+# organisation compliant on its own; most controls also have process/policy parts.
+
+version: 1
+
+frameworks:
+  pci-dss:
+    name: PCI DSS v4.0.1
+  iso27001:
+    name: ISO/IEC 27001:2022 Annex A
+
+# ---------------------------------------------------------------------------
+# Checks: one entry per automated test. "report" is relative to --reports-dir.
+#   on_fail: fail (default) | warn
+# ---------------------------------------------------------------------------
+checks:
+  secrets-scan:
+    title: No secrets committed to source
+    tool: gitleaks
+    report: gitleaks.json
+
+  sast-injection:
+    title: No injection flaws (SQLi, expression/template injection)
+    tool: semgrep
+    report: semgrep.json
+    rules: [jdbc-sql-string-concat, commons-text-interpolator-on-input]
+
+  sast-crypto:
+    title: No weak hashing of sensitive data
+    tool: semgrep
+    report: semgrep.json
+    rules: [weak-hash-algorithm]
+
+  vuln-scan-evidence:
+    title: Image and dependency vulnerability scan performed and risk-ranked
+    tool: trivy
+    report: trivy-image.json
+    mode: evidence
+
+  deps-critical:
+    title: No fixable CRITICAL vulnerabilities in application dependencies
+    tool: trivy
+    report: trivy-image.json
+    severities: [CRITICAL]
+    fixable_only: true
+    classes: [lang-pkgs]
+
+  os-critical:
+    title: No fixable CRITICAL vulnerabilities in base-image OS packages
+    tool: trivy
+    report: trivy-image.json
+    severities: [CRITICAL]
+    fixable_only: true
+    classes: [os-pkgs]
+    on_fail: warn        # base-image CVEs move daily; warn, and rebuild nightly
+
+  sbom:
+    title: SBOM (CycloneDX) generated for the build
+    tool: cyclonedx
+    report: bom.json
+    min_components: 1
+
+  iac-encryption-at-rest:
+    title: Storage encrypted at rest (S3 KMS, RDS)
+    tool: checkov
+    report: checkov.json
+    check_ids: [CKV_AWS_145, CKV_AWS_16]
+
+  iac-tls:
+    title: HTTPS with TLS 1.2+ on public endpoints
+    tool: checkov
+    report: checkov.json
+    check_ids: [CKV_AWS_2, CKV_AWS_103]
+
+  iac-logging:
+    title: Access and audit logging enabled (S3, ALB, RDS)
+    tool: checkov
+    report: checkov.json
+    check_ids: [CKV_AWS_18, CKV_AWS_91, CKV_AWS_129]
+
+  iac-network:
+    title: No admin ports open to the internet
+    tool: checkov
+    report: checkov.json
+    check_ids: [CKV_AWS_24, CKV_AWS_25, CKV_AWS_260]
+
+  iac-waf:
+    title: Public load balancer protected by a WAF
+    tool: checkov
+    report: checkov.json
+    check_ids: [CKV2_AWS_28]
+
+  container-hardening:
+    title: Container image hardened (pinned base, non-root, healthcheck)
+    tool: checkov
+    report: checkov.json
+    check_ids: [CKV_DOCKER_2, CKV_DOCKER_3, CKV_DOCKER_7]
+
+  dast-baseline:
+    title: DAST baseline scan of the running app
+    tool: zap
+    report: zap.json
+    fail_riskcode: 3     # High
+    warn_riskcode: 2     # Medium
+
+  pr-approval:
+    title: Change peer-reviewed and approved before merge
+    tool: github_reviews
+    report: pr-reviews.json
+    min_approvals: 1
+
+  pipeline-complete:
+    title: All security stages ran and produced evidence
+    tool: reports_present
+    reports: [gitleaks.json, semgrep.json, trivy-image.json, bom.json, checkov.json, zap.json]
+
+# ---------------------------------------------------------------------------
+# Controls. blocking: true means a FAIL stops the build.
+# ---------------------------------------------------------------------------
+controls:
+  # ---------------- PCI DSS v4.0.1 ----------------
+  - id: "1.3.1"
+    framework: pci-dss
+    title: Inbound traffic to the CDE is restricted
+    checks: [iac-network]
+    blocking: true
+  - id: "2.2.6"
+    framework: pci-dss
+    title: System security parameters configured to prevent misuse
+    checks: [container-hardening]
+    blocking: true
+  - id: "3.5.1"
+    framework: pci-dss
+    title: PAN rendered unreadable wherever it is stored
+    checks: [iac-encryption-at-rest, sast-crypto]
+    blocking: true
+  - id: "4.2.1"
+    framework: pci-dss
+    title: Strong cryptography protects PAN in transit over public networks
+    checks: [iac-tls]
+    blocking: true
+  - id: "6.2.3"
+    framework: pci-dss
+    title: Bespoke software reviewed before release to production
+    checks: [pr-approval]
+    blocking: false
+  - id: "6.2.4"
+    framework: pci-dss
+    title: Engineering techniques prevent common software attacks
+    checks: [sast-injection]
+    blocking: true
+  - id: "6.3.1"
+    framework: pci-dss
+    title: Security vulnerabilities identified and risk-ranked
+    checks: [vuln-scan-evidence]
+    blocking: true
+  - id: "6.3.2"
+    framework: pci-dss
+    title: Inventory of bespoke and third-party software components
+    checks: [sbom]
+    blocking: true
+  - id: "6.3.3"
+    framework: pci-dss
+    title: Critical security patches installed promptly
+    checks: [deps-critical, os-critical]
+    blocking: true
+  - id: "6.4.1"
+    framework: pci-dss
+    title: Public-facing web apps assessed for vulnerabilities
+    checks: [dast-baseline]
+    blocking: true
+  - id: "6.4.2"
+    framework: pci-dss
+    title: Automated solution detects/prevents attacks on public web apps
+    checks: [iac-waf]
+    blocking: true
+  - id: "8.6.2"
+    framework: pci-dss
+    title: Application/system account credentials not hard-coded
+    checks: [secrets-scan]
+    blocking: true
+  - id: "10.2.1"
+    framework: pci-dss
+    title: Audit logs enabled and active
+    checks: [iac-logging]
+    blocking: true
+
+  # ---------------- ISO/IEC 27001:2022 Annex A ----------------
+  - id: "A.5.9"
+    framework: iso27001
+    title: Inventory of information and other associated assets
+    checks: [sbom]
+    blocking: true
+  - id: "A.5.17"
+    framework: iso27001
+    title: Authentication information
+    checks: [secrets-scan]
+    blocking: true
+  - id: "A.8.8"
+    framework: iso27001
+    title: Management of technical vulnerabilities
+    checks: [deps-critical, os-critical]
+    blocking: true
+  - id: "A.8.9"
+    framework: iso27001
+    title: Configuration management
+    checks: [container-hardening]
+    blocking: true
+  - id: "A.8.15"
+    framework: iso27001
+    title: Logging
+    checks: [iac-logging]
+    blocking: true
+  - id: "A.8.20"
+    framework: iso27001
+    title: Networks security
+    checks: [iac-network, iac-waf]
+    blocking: true
+  - id: "A.8.24"
+    framework: iso27001
+    title: Use of cryptography
+    checks: [iac-encryption-at-rest, iac-tls, sast-crypto]
+    blocking: true
+  - id: "A.8.25"
+    framework: iso27001
+    title: Secure development life cycle
+    checks: [pipeline-complete]
+    blocking: true
+  - id: "A.8.28"
+    framework: iso27001
+    title: Secure coding
+    checks: [sast-injection, sast-crypto]
+    blocking: true
+  - id: "A.8.29"
+    framework: iso27001
+    title: Security testing in development and acceptance
+    checks: [dast-baseline]
+    blocking: true
+  - id: "A.8.32"
+    framework: iso27001
+    title: Change management
+    checks: [pr-approval]
+    blocking: false

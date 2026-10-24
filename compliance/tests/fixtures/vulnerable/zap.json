@@ -1,0 +1,31 @@
+{
+  "@programName": "ZAP",
+  "site": [
+    {
+      "@name": "http://localhost:8080",
+      "alerts": [
+        {
+          "pluginid": "10038",
+          "alert": "Content Security Policy (CSP) Header Not Set",
+          "riskcode": "2",
+          "confidence": "3",
+          "count": "3"
+        },
+        {
+          "pluginid": "10021",
+          "alert": "X-Content-Type-Options Header Missing",
+          "riskcode": "1",
+          "confidence": "2",
+          "count": "3"
+        },
+        {
+          "pluginid": "10049",
+          "alert": "Storable and Cacheable Content",
+          "riskcode": "0",
+          "confidence": "2",
+          "count": "3"
+        }
+      ]
+    }
+  ]
+}

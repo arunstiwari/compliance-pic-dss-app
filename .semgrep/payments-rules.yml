@@ -1,0 +1,49 @@
+# Project SAST rules. Rule IDs are referenced from compliance/controls.yaml,
+# which is how each finding is tied to a PCI DSS / ISO 27001 control.
+# Add registry packs (e.g. --config p/java) in the workflow for broader coverage.
+rules:
+  - id: jdbc-sql-string-concat
+    languages: [java]
+    severity: ERROR
+    message: >-
+      SQL statement built by string concatenation and executed with JdbcTemplate.
+      Use bind parameters ("... WHERE x = ?") to prevent SQL injection.
+    metadata:
+      cwe: "CWE-89: SQL Injection"
+      owasp: "A03:2021 Injection"
+    patterns:
+      - pattern-either:
+          - pattern: |
+              String $SQL = "..." + $X + ...;
+              ...
+              $JDBC.$METHOD($SQL, ...);
+          - pattern: $JDBC.$METHOD("..." + $X + ..., ...)
+      - metavariable-regex:
+          metavariable: $METHOD
+          regex: ^(query|queryForList|queryForObject|queryForMap|update|execute|batchUpdate)$
+
+  - id: commons-text-interpolator-on-input
+    languages: [java]
+    severity: ERROR
+    message: >-
+      StringSubstitutor.createInterpolator() resolves script:, dns: and url: lookups.
+      Never apply it to user-controlled input (Text4Shell pattern). Use
+      new StringSubstitutor(allowListedValues) instead.
+    metadata:
+      cwe: "CWE-94: Code Injection"
+      owasp: "A03:2021 Injection"
+    pattern: org.apache.commons.text.StringSubstitutor.createInterpolator()
+
+  - id: weak-hash-algorithm
+    languages: [java]
+    severity: ERROR
+    message: >-
+      MD5/SHA-1 are not acceptable for protecting cardholder data. Use a keyed
+      hash (HMAC-SHA256) with the key held outside the code.
+    metadata:
+      cwe: "CWE-327: Broken or Risky Cryptographic Algorithm"
+    pattern-either:
+      - pattern: java.security.MessageDigest.getInstance("MD5")
+      - pattern: java.security.MessageDigest.getInstance("MD2")
+      - pattern: java.security.MessageDigest.getInstance("SHA-1")
+      - pattern: java.security.MessageDigest.getInstance("SHA1")

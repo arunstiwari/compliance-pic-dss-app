@@ -1,0 +1,22 @@
+title = "payments-api secrets policy"
+
+# Keep all of Gitleaks' built-in rules (AWS, GitHub, Stripe, private keys, ...).
+[extend]
+useDefault = true
+
+# Fictional processor used by the demo. Using an invented key format means the
+# planted secret is detected here but never trips GitHub push protection.
+[[rules]]
+id = "paygate-live-api-key"
+description = "PayGate live API key"
+regex = '''pgk_live_[A-Za-z0-9]{32}'''
+keywords = ["pgk_live_"]
+tags = ["payment", "api-key"]
+
+[allowlist]
+description = "Demo fixtures and fix overlay are not part of the shipped app"
+paths = [
+  '''^demo-kit/''',
+  '''^compliance/tests/''',
+  '''^reports/''',
+]

@@ -1,0 +1,7 @@
+app/target/
+reports/
+.terraform/
+*.tfstate*
+.idea/
+.vscode/
+__pycache__/

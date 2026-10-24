@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "payments-api:ci",
+  "ArtifactType": "container_image",
+  "Results": [
+    {
+      "Target": "payments-api:ci (alpine 3.22)",
+      "Class": "os-pkgs",
+      "Type": "alpine",
+      "Vulnerabilities": []
+    },
+    {
+      "Target": "app/app.jar",
+      "Class": "lang-pkgs",
+      "Type": "jar",
+      "Vulnerabilities": []
+    }
+  ]
+}
