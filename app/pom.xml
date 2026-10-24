@@ -69,13 +69,15 @@
           <execution>
             <phase>package</phase>
             <goals><goal>makeAggregateBom</goal></goals>
+            <!-- Execution-level so it wins over the Spring Boot parent's
+                 defaults (target/classes/META-INF/sbom/application.cdx.json). -->
+            <configuration>
+              <outputFormat>json</outputFormat>
+              <outputName>bom</outputName>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <outputFormat>json</outputFormat>
-          <outputName>bom</outputName>
-          <outputDirectory>${project.build.directory}</outputDirectory>
-        </configuration>
       </plugin>
     </plugins>
   </build>
