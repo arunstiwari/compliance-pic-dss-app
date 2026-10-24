@@ -13,9 +13,11 @@ public class ReceiptController {
     @PostMapping("/preview")
     public Map<String, String> preview(@RequestBody Map<String, String> body) {
         String template = body.getOrDefault("template", "");
-        // PLANTED ISSUE (PCI DSS 6.2.4 / ISO A.8.28): the interpolator evaluates
-        // ${script:...}, ${dns:...} and ${url:...} lookups from user input (Text4Shell pattern).
-        String rendered = StringSubstitutor.createInterpolator().replace(template);
-        return Map.of("receipt", rendered);
+        // FIXED (PCI DSS 6.2.4 / ISO A.8.28): only an explicit allow-list of variables
+        // is substituted; no script/dns/url lookups.
+        Map<String, String> vars = Map.of(
+                "amount", body.getOrDefault("amount", ""),
+                "merchant", body.getOrDefault("merchant", ""));
+        return Map.of("receipt", new StringSubstitutor(vars).replace(template));
     }
 }

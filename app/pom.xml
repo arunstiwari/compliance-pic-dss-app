@@ -8,7 +8,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <!-- Bump to the newest 4.0.x / 4.1.x patch before the demo so the framework itself scans clean. -->
-    <version>4.0.8</version>
+    <version>4.0.9</version>
     <relativePath/>
   </parent>
 
@@ -41,12 +41,11 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- PLANTED ISSUE (PCI DSS 6.3.3 / ISO A.8.8): commons-text 1.9 is affected by
-         CVE-2022-42889 "Text4Shell" (CRITICAL, fixed in 1.10.0). -->
+    <!-- FIXED (PCI DSS 6.3.3 / ISO A.8.8): upgraded past CVE-2022-42889 "Text4Shell". -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
-      <version>1.9</version>
+      <version>1.14.0</version>
     </dependency>
 
     <dependency>

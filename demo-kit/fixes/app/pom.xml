@@ -8,7 +8,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <!-- Bump to the newest 4.0.x / 4.1.x patch before the demo so the framework itself scans clean. -->
-    <version>4.0.8</version>
+    <version>4.0.9</version>
     <relativePath/>
   </parent>
 
@@ -69,13 +69,15 @@
           <execution>
             <phase>package</phase>
             <goals><goal>makeAggregateBom</goal></goals>
+            <!-- Execution-level so it wins over the Spring Boot parent's
+                 defaults (target/classes/META-INF/sbom/application.cdx.json). -->
+            <configuration>
+              <outputFormat>json</outputFormat>
+              <outputName>bom</outputName>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <outputFormat>json</outputFormat>
-          <outputName>bom</outputName>
-          <outputDirectory>${project.build.directory}</outputDirectory>
-        </configuration>
       </plugin>
     </plugins>
   </build>
