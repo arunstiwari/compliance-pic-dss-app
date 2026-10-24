@@ -1,5 +1,6 @@
 package com.demo.payments.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -8,13 +9,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PaymentGatewayConfig {
 
-    // PLANTED ISSUE (PCI DSS 8.6.2 / ISO A.5.17): live credential hard-coded in source.
-    // "PayGate" is fictional, so this value is fake and safe to push; the demo's
-    // .gitleaks.toml has a rule for its key format.
-    private static final String API_KEY = "pgk_live_7Hq2mX9vLz4Rt1Yb6Nc3Hd5Wj0Ae8UsK";
+    // FIXED (PCI DSS 8.6.2 / ISO A.5.17): injected at runtime from the environment
+    // (in production, from a secrets manager such as AWS Secrets Manager or Vault).
+    private final String apiKey;
+
+    public PaymentGatewayConfig(@Value("${paygate.api-key:}") String apiKey) {
+        this.apiKey = apiKey;
+    }
 
     public String apiKey() {
-        return API_KEY;
+        return apiKey;
     }
 
     public String endpoint() {

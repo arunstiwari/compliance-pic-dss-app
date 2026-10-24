@@ -22,9 +22,9 @@ public class CardController {
     /** Lists stored (tokenised) cards for a customer. */
     @GetMapping
     public List<Map<String, Object>> byCustomer(@RequestParam String customerId) {
-        // PLANTED ISSUE (PCI DSS 6.2.4 / ISO A.8.28): SQL built by string concatenation.
-        String sql = "SELECT id, customer_id, brand, last4 FROM cards WHERE customer_id = '" + customerId + "'";
-        return jdbc.queryForList(sql);
+        // FIXED (PCI DSS 6.2.4 / ISO A.8.28): bind variable, never string concatenation.
+        return jdbc.queryForList(
+                "SELECT id, customer_id, brand, last4 FROM cards WHERE customer_id = ?", customerId);
     }
 
     /** Returns a duplicate-detection fingerprint for a PAN without storing the PAN. */
